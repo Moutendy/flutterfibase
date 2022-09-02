@@ -1,42 +1,49 @@
+import 'dart:convert';
 import 'dart:html';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_flut/services/user_services.dart';
 import 'package:flutter/material.dart';
 
 import 'model/Users.dart';
 
-class Alluser extends StatelessWidget {
-
+class Alluser extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-      Stream<QuerySnapshot> readUser() =>
-    FirebaseFirestore.instance.collection('users').snapshots();
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('All Users'),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: readUser(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-             final Map<String, dynamic> users = snapshot.data! as Map<String, dynamic>;
-
-            return ListView(children:[
-              Text('${users['email']}')
-              ,
-            ]);
-          } else {
-            print(snapshot.hasData);
-            return Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-    );
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return _User();
   }
 }
 
-Widget buideUser(User user) => ListTile(
-      leading: CircleAvatar(child: Text('${user.email}')),
-      title: Text(user.email),
-    );
-
+class _User extends State<Alluser> {
+  @override
+  Widget build(BuildContext context) {
+    final Stream<QuerySnapshot> collectionReference = UserService.readUser();
+    // TODO: implement build
+    return Scaffold(
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          title: const Text("List of Users"),
+        ),
+        body: StreamBuilder(
+            stream: collectionReference,
+            builder:
+                ( context, snapshot) {
+              if (snapshot.hasData) {
+         var user=snapshot.data!.docs;
+  // ignore: unused_local_variable
+print(user);
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: ListView.builder(
+                    itemCount: user.length,
+                    itemBuilder: ((context, index) {
+                    return Text('${user[index].get('email')}');
+                  }))
+                  );
+              }
+              return Container();
+            }));
+  }
+}
